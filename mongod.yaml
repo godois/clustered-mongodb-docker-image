@@ -1,0 +1,9 @@
+net:
+   bindIp: 0.0.0.0
+   port: 27017
+storage:
+   dbPath: /opt/mongodb/data
+systemLog:
+   destination: file
+   path: "/opt/mongodb/log/mongod.log"
+   logAppend: true
