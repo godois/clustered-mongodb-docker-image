@@ -48,4 +48,4 @@ EXPOSE 27017
 EXPOSE 28017
 
 # Set the entrypoint file
-ENTRYPOINT ["/usr/local/mongodb-3.4.2/bin/run.sh"]
+ENTRYPOINT ["entry-point.sh"]
