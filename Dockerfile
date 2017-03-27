@@ -11,6 +11,20 @@ MAINTAINER Marcio Godoi <souzagodoi@gmail.com>
 
 USER root
 
+RUN apt-get update && \
+    apt-get install -y \
+    wget \
+   	tar \
+	less \
+	git \
+	curl \
+	vim \
+	wget \
+	unzip \
+	netcat \
+	software-properties-common \
+	telnet
+
 # Download Mongodb binary file and extract it to a folder
 RUN wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.4.2.tgz -P /tmp/mongodb && \
   tar -xvzf /tmp/mongodb/mongodb-linux-x86_64-ubuntu1404-3.4.2.tgz -C /tmp/mongodb && \
@@ -36,10 +50,10 @@ ADD init-standalone.js $MONGOPATH
 ADD init-replicaset.js $MONGOPATH
 
 # Put the entrypoint file into the MongoDB directory
-ADD run.sh $MONGOPATH/bin/run.sh
+ADD run.sh $MONGOPATH/bin/entry-point.sh
 
 # Allows the Entrypoint file to execute as a shell 
-RUN chmod 755 $MONGOPATH/bin/run.sh
+RUN chmod 755 $MONGOPATH/bin/entry-point.sh
 
 # Expose the connection port to the host
 EXPOSE 27017
