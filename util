@@ -1,0 +1,140 @@
+
+docker kill $(docker ps -a -q)
+docker rm $(docker ps -a -q)
+
+sudo rm -rf /tmp/mongodb-master/data/* && \
+sudo rm -rf /tmp/mongodb-master/log/* && \
+sudo rm -rf /tmp/mongodb-rpl1/data/* && \
+sudo rm -rf /tmp/mongodb-rpl1/log/*  && \
+sudo rm -rf /tmp/mongodb-rpl2/data/* && \
+sudo rm -rf /tmp/mongodb-rpl2/log/*
+
+docker build -t 52.45.172.10/mongodb:1.0 .
+
+docker build -t godois/mongo-clustered:1.0 .
+
+docker run -d -it \
+    --name mongodb-master \
+    --hostname="mongonode1.example.com" \
+    --add-host mongonode2.example.com:192.170.1.2 \
+    --add-host mongonode3.example.com:192.170.1.3 \
+    --ip 192.170.1.1 \
+    --net mongodb-net \
+    -p 27017:27017 -p 28017:28017 \
+    -e MONGODB_REPLICASET=false \
+    -e MONGODB_MASTER=false \
+    -e MONGODB_CLUSTER_NAME=false \
+    -v /tmp/mongodb-master/data:/opt/mongodb/data \
+    -v /tmp/mongodb-master/log:/opt/mongodb/log \
+    52.45.172.10/mongodb:1.0
+
+docker run -d -it \
+    --name mongodb-master \
+    --hostname="mongonode1.example.com" \
+    --add-host mongonode2.example.com:192.170.1.2 \
+    --add-host mongonode3.example.com:192.170.1.3 \
+    --ip 192.170.1.1 \
+    --net mongodb-net \
+    -p 27017:27017 -p 28017:28017 \
+    -e MONGODB_REPLICASET=true \
+    -e MONGODB_MASTER=true \
+    -e MONGODB_CLUSTER_NAME=labcluster \
+    -v /tmp/mongodb-master/data:/opt/mongodb/data \
+    -v /tmp/mongodb-master/log:/opt/mongodb/log \
+    52.45.172.10/mongodb:1.0
+
+docker logs mongodb-master
+
+docker run -d -it \
+    --name mongodb-rpl1 \
+    --hostname="mongonode2.example.com" \
+    --add-host mongonode1.example.com:192.170.1.1 \
+    --add-host mongonode3.example.com:192.170.1.3 \
+    --ip 192.170.1.2 \
+    --net mongodb-net \
+    -p 27018:27017 -p 28018:28017 \
+    -e MONGODB_REPLICASET=true \
+    -e MONGODB_MASTER=false \
+    -e MONGODB_CLUSTER_NAME=labcluster \
+    -v /tmp/mongodb-rpl1/data:/opt/mongodb/data \
+    -v /tmp/mongodb-rpl1/log:/opt/mongodb/log \
+    52.45.172.10/mongodb:1.0
+
+docker logs mongodb-rpl1
+
+docker run -d -it \
+    --name mongodb-rpl2 \
+    --hostname="mongonode3.example.com" \
+    --add-host mongonode1.example.com:192.170.1.1 \
+    --add-host mongonode2.example.com:192.170.1.2 \
+    --ip 192.170.1.3 \
+    --net mongodb-net \
+    -p 27019:27017 -p 28019:28017 \
+    -e MONGODB_REPLICASET=true \
+    -e MONGODB_MASTER=false \
+    -e MONGODB_CLUSTER_NAME=labcluster \
+    -v /tmp/mongodb-rpl2/data:/opt/mongodb/data \
+    -v /tmp/mongodb-rpl2/log:/opt/mongodb/log \
+    52.45.172.10/mongodb:1.0
+
+docker logs mongodb-rpl2
+
+docker exec -i -t mongodb-master /bin/bash
+docker exec -i -t mongodb-rpl1 /bin/bash
+docker exec -i -t mongodb-rpl2 /bin/bash
+
+docker network create --subnet=192.170.0.0/16 mongodb-net
+
+/./usr/local/mongodb-3.4.2/bin/mongod --config /usr/local/mongodb-3.4.2/mongod.yaml --rest --journal --replSet $MONGO_CLUSTER &
+
+/./usr/local/mongodb-3.4.2/bin/mongod --fork --rest --journal --config /usr/local/mongodb-3.4.2/mongod.yaml
+
+/./usr/local/mongodb-3.4.2/bin/mongod --config /usr/local/mongodb-3.4.2/mongod.yaml --shutdown
+
+/./usr/local/mongodb-3.4.2/bin/mongod --auth --fork --rest --journal --config /usr/local/mongodb-3.4.2/mongod.yaml
+
+/./usr/local/mongodb-3.4.2/bin/mongo < /./usr/local/mongodb-3.4.2/init-standalone.js
+
+/./usr/local/mongodb-3.4.2/bin/mongo -u "admin" -p "password" --authenticationDatabase "admin"
+
+config= {_id: "labcluster",members: [{_id: 0,host: "mongonode1.example.com:27017"}]}
+
+rs.initiate(config)
+
+rs.add("mongonode2.example.com:27017")
+rs.add("mongonode3.example.com:27017")
+
+rs.conf()
+
+cd /home/ubuntu/skapeedevops/docker-images/mongodb/
+
+docker exec -i -t $(docker ps -a -q) /bin/bash
+
+MONGODB_REPLICASET=true && \
+MONGODB_MASTER=false && \
+MONGO_CLUSTER_NAME=labcluster && \
+
+/./usr/local/mongodb-3.4.2/bin/mongo
+
+use admin;
+
+db.createUser( {
+     user: "admin",
+     pwd: "password",
+     roles: [ { role: "root", db: "admin" } ]
+   });
+
+db.createUser( {
+     user: "siteUserAdmin",
+     pwd: "password",
+     roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
+   });
+
+exit;
+
+db.changeUserPassword("restuser", "111", "MONGODB-CR")
+
+
+
+
+export MONGODB_REPLICASET=true; export MONGODB_CLUSTER_NAME=labcluster; export MONGODB_MASTER=true; export MONGODB_ENDPOINTS=mongonode1.example.com:27017,mongonode2.example.com:27017,mongonode3.example.com:27017; ./run.sh
