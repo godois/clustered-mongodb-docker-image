@@ -13,47 +13,42 @@ then
 #   echo "MONGODB_REPLICASET TRUE";
     if [ "$MONGODB_CLUSTER_NAME" != "" ];
     then
-        echo "Bootstrapping a replicaset MongoDB cluster..."
+        echo "---------> MongoDB Cluster Shell Init - Bootstrapping a replicaset MongoDB cluster..."
         if [ "$MONGODB_MASTER" = true ];
         then
-            echo "Bootsrapping a replicaset MongoDB cluster...";
+            echo "---------> MongoDB Cluster Shell Init - Bootsrapping a replicaset MongoDB cluster...";
             /./usr/local/mongodb-3.4.2/bin/mongod --config /usr/local/mongodb-3.4.2/mongod.yaml --rest --journal --replSet $MONGODB_CLUSTER_NAME &
             sleep 5;
 
-            echo "Setting the configurations for replicaset cluster..."
+            echo "---------> MongoDB Cluster Shell Init - Setting the configurations for replicaset cluster..."
 
             IFS=',' read -ra ENDPOINTS <<< "$MONGODB_ENDPOINTS"
 
-            echo "Connecting and configuring the first replicaset node... ${ENDPOINTS[0]}"
+            echo "---------> MongoDB Cluster Shell Init - Connecting and configuring the first replicaset node... ${ENDPOINTS[0]}"
 
-            STRING_CONFIG="config= {_id: \"labcluster\",members: [{_id: 0,host:\"${ENDPOINTS[0]}\"}]};";
-
-            /./usr/local/mongodb-3.4.2/bin/mongo ${ENDPOINTS[0]} --eval ${STRING_CONFIG}
-            sleep 5;
-
-            /./usr/local/mongodb-3.4.2/bin/mongo ${ENDPOINTS[0]} --eval "rs.initiate(config);"
+            /./usr/local/mongodb-3.4.2/bin/mongo ${ENDPOINTS[0]} --eval "rs.initiate({_id: 'labcluster',members: [{_id: 0,host:'${ENDPOINTS[0]}'}]});"
 
             for endpoint in "${ENDPOINTS[@]:1}"; do
-                echo "Adding endpoint $endpoint to the ReplicaSet..."
+                echo "---------> MongoDB Cluster Shell Init - Adding endpoint $endpoint to the ReplicaSet..."
                 /./usr/local/mongodb-3.4.2/bin/mongo ${ENDPOINTS[0]} --eval "rs.add('$endpoint')"
                 sleep 5;
             done
 
+            /./usr/local/mongodb-3.4.2/bin/mongo ${ENDPOINTS[1]} --eval "cfg = rs.conf(); cfg.members[0].priority = 2; cfg.members[1].priority = 1; cfg.members[2].priority=0; rs.reconfig(cfg)"
+
             /./usr/local/mongodb-3.4.2/bin/mongo ${ENDPOINTS[0]} --eval "printjson(rs.status())"
 
-            /./usr/local/mongodb-3.4.2/bin/mongo ${ENDPOINTS[0]} --eval "rs.conf()"
-            sleep 5;
-
-            echo "Creating default users..."
+            echo "---------> MongoDB Cluster Shell Init - Creating default users..."
             /./usr/local/mongodb-3.4.2/bin/mongo < /./usr/local/mongodb-3.4.2/init-standalone.js
             sleep 5;
 
-            echo "Shutting down the server...";
+            echo "---------> MongoDB Cluster Shell Init - Shutting down the server...";
             /./usr/local/mongodb-3.4.2/bin/mongod --config /usr/local/mongodb-3.4.2/mongod.yaml --shutdown
             sleep 5;
 
-            echo "Starting replicaset with Auth parameter on...";
-            /./usr/local/mongodb-3.4.2/bin/mongod --config /usr/local/mongodb-3.4.2/mongod.yaml --auth --rest --journal --replSet $MONGODB_CLUSTER_NAME
+            echo "---------> MongoDB Cluster Shell Init - Starting replicaset with Auth parameter on...";
+            #/./usr/local/mongodb-3.4.2/bin/mongod --config /usr/local/mongodb-3.4.2/mongod.yaml --auth --rest --journal --replSet $MONGODB_CLUSTER_NAME
+            /./usr/local/mongodb-3.4.2/bin/mongod --config /usr/local/mongodb-3.4.2/mongod.yaml --rest --journal --replSet $MONGODB_CLUSTER_NAME
         else
             echo "Starting SECONDARY node up...";
             /./usr/local/mongodb-3.4.2/bin/mongod --config /usr/local/mongodb-3.4.2/mongod.yaml --rest --journal --replSet $MONGODB_CLUSTER_NAME
@@ -76,6 +71,7 @@ else
     sleep 5;
 
     echo "Starting instance with Auth parameter on...";
-    /./usr/local/mongodb-3.4.2/bin/mongod --auth --rest --journal --config /usr/local/mongodb-3.4.2/mongod.yaml
+    #/./usr/local/mongodb-3.4.2/bin/mongod --auth --rest --journal --config /usr/local/mongodb-3.4.2/mongod.yaml
+    /./usr/local/mongodb-3.4.2/bin/mongod --rest --journal --config /usr/local/mongodb-3.4.2/mongod.yaml
 
 fi
