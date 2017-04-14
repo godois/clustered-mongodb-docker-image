@@ -62,4 +62,4 @@ EXPOSE 27017
 EXPOSE 28017
 
 # Set the entrypoint file
-ENTRYPOINT ["entry-point.sh"]
+ENTRYPOINT ["run.sh"]
