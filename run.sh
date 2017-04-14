@@ -1,16 +1,8 @@
 #!/bin/bash
 
-#tail -F -n0 /etc/hosts
-#/./usr/local/mongodb-3.4.2/bin/mongod --config /usr/local/mongodb-3.4.2/mongod.yaml --bind_ip 0.0.0.0 --rest --journal
-
-#/./usr/local/mongodb-3.4.2/bin/mongod --config /usr/local/mongodb-3.4.2/mongod.yaml --rest --journal --replSet $MONGO_CLUSTER &
-
-#MONGODB_REPLICASET=true
-#MONGODB_CLUSTER_NAME=labcluster
-#MONGODB_MASTER=true
-#MONGODB_ENDPOINTS=mongonode1.example.com:27017,mongonode2.example.com:27017,mongonode3.example.com:27017
-
-#$ADD_DELAY=5
+# Entry-point script for clustered-mongodb docker image.
+# MONGODB_REPLICASET = it allows you to bootstrap a replicaset cluster of mongodb (true/false). Ex: export MONGODB_REPLICASET=true
+# MONGODB_CLUSTER_NAME = it allows you to set a name for your mongodb cluster. Ex: export MONGODB_CLUSTER_NAME=labcluster
 
 if [ "$MONGODB_REPLICASET" = true ];
 then
