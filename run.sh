@@ -3,6 +3,10 @@
 # Entry-point script for clustered-mongodb docker image.
 # MONGODB_REPLICASET = it allows you to bootstrap a replicaset cluster of mongodb (true/false). Ex: export MONGODB_REPLICASET=true
 # MONGODB_CLUSTER_NAME = it allows you to set a name for your mongodb cluster. Ex: export MONGODB_CLUSTER_NAME=labcluster
+# MONGODB_MASTER = true whether you want to set this node master, false for non master nodes
+# MONGODB_ENDPOINTS = if you set MONGODB_REPLICASET=true and MONGODB_CLUSTER_NAME with a value, then, you should set this variable with the addresses
+# for the cluster members
+
 
 if [ "$MONGODB_REPLICASET" = true ];
 then
