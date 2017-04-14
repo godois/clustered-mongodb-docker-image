@@ -136,5 +136,5 @@ db.changeUserPassword("restuser", "111", "MONGODB-CR")
 
 
 
-
+# Testing replicaset parameters with
 export MONGODB_REPLICASET=true; export MONGODB_CLUSTER_NAME=labcluster; export MONGODB_MASTER=true; export MONGODB_ENDPOINTS=mongonode1.example.com:27017,mongonode2.example.com:27017,mongonode3.example.com:27017; ./run.sh
