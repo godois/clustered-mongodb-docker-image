@@ -46,9 +46,6 @@ ADD mongod.yaml $MONGOPATH
 # This init-standalone.js file is used to setup the admin user at the moment to startup the container
 ADD init-standalone.js $MONGOPATH
 
-# This init-replicaset.js file is used to setup the replicaset cluster at the moment to startup the containers
-ADD init-replicaset.js $MONGOPATH
-
 # Put the entrypoint file into the MongoDB directory
 ADD run.sh $MONGOPATH/bin/entry-point.sh
 
@@ -62,4 +59,4 @@ EXPOSE 27017
 EXPOSE 28017
 
 # Set the entrypoint file
-ENTRYPOINT ["run.sh"]
+ENTRYPOINT ["/usr/local/mongodb-3.4.2/bin/entry-point.sh"]
